@@ -44,7 +44,7 @@ hosts:
   max_processes: 2
 ```
 
-`distxargs` requires that each host can be connected using `ssh` command **without password** . If you do not sure about that, set up the hosts with following steps.
+`distxargs` requires that each host can be connected using `ssh` command **without password** . If you are not sure about that, set up the hosts with following steps.
 
 ### SSH configuration for localhost
 
@@ -102,7 +102,7 @@ Options:
   -n MAX_ARGS       Max count of arguments passed to a process.
   -L MAX_ARGS       Same as `-n`, but arguments are separated by new line.
   -t                Show command line on command execution.
-  -c_FILE           Configuration file. [default: ./conf.distxargs.yaml]
+  -c FILE           Configuration file. [default: ./conf.distxargs.yaml]
   --localhost-only  Run commands only on localhost.
   --generate-sample-config-file
 ```
