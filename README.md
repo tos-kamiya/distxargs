@@ -1,9 +1,9 @@
-# distxargs, Parallel execution with a pool of worker processes on cluster via ssh.
+﻿# distxargs, Parallel execution with a pool of worker processes on cluster via ssh.
 
-`distxargs` is a esay-to-use parallel execution of cli commands, basicaly a distributed version of `xargs -P`.
+`distxargs` is a easy-to-use parallel execution of cli commands, basically a distributed version of `xargs -P`.
 
 `distxargs` runs cli commands in a parallel way on host computers via ssh.
-You can specify count of max processes for each of the host computers.
+You can specify a count of max processes for each of the host computers.
 
 ## Installation
 
@@ -44,7 +44,7 @@ hosts:
   max_processes: 2
 ```
 
-`distxargs` requires that each host can be connected using `ssh` command **without passwword** . If you do not sure about that, set up the hosts with following steps.
+`distxargs` requires that each host can be connected using `ssh` command **without password** . If you do not sure about that, set up the hosts with following steps.
 
 ### SSH configuration for localhost
 
@@ -76,11 +76,11 @@ As for the other hosts,
 ssh username@hostname
 ```
 
-If the host do not ask password, you already have established a password-less connection to the host, so skip the following steps:
+If the host does not ask password, you already have established a password-less connection to the host, so skip the following steps:
 
 (2) Ensure you have a public key for ssh. If you do not have, make the key with the step (1) for localhost.
 
-(3) Add the public key to a authorized-key list of the host.
+(3) Add the public key to an authorized-key list of the host.
 
 ```
 ssh-copy-id username@hostname

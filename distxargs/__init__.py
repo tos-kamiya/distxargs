@@ -145,7 +145,7 @@ Options:
   -n MAX_ARGS       Max count of arguments passed to a process.
   -L MAX_ARGS       Same as `-n`, but arguments are separated by new line.
   -t                Show command line on command execution.
-  -c_FILE           Configuration file. [default: {config_file}]
+  -c FILE           Configuration file. [default: {config_file}]
   --localhost-only  Run commands only on localhost.
   --generate-sample-config-file
 '''.format(config_file=CONF_FILE)
