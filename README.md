@@ -2,8 +2,9 @@
 
 `distxargs` is a easy-to-use parallel execution of cli commands, basically a **distributed version of `xargs -P` **.
 
-`distxargs` runs cli commands in a parallel way on host computers via ssh.
-You **can specify a count of max processes for each of host computers**.
+* Runs cli commands in a parallel way on host computers via ssh.
+* Selects a host to run a cli command, depending on the number of running process on it at that time (a dynamic scheduling).
+* Can put a distinct limitation of max processes to each host.
 
 ## Installation
 
@@ -23,7 +24,7 @@ python3 -m pip uninstall distxargs
 
 ## Configuration of hosts
 
-`distxargs` requires that each host can be connected using `ssh` command **without password** . If you are not sure about that, set up the hosts with following steps.
+`distxargs` requires that each host can be connected using `ssh` command **without password** . If you are not sure about that, set up the hosts with the following instruction.
 
 ### SSH configuration for localhost
 
@@ -89,23 +90,29 @@ Options:
 
 ### Example
 
+Runs `echo` commands total 5 times on 2 computers (hosts).
+The `localhost` runs up to one process at a time.
+A host `node1` runs up to two processes at a time.
+
 ```
-echo alice bob charlie dave | distxargs -n1 -t \
--P 2,toshihiro@localhost -P 2,toshihiro@node1 \
-echo
-ssh toshihiro@localhost echo alice
-ssh toshihiro@localhost echo bob
-ssh toshihiro@node01 echo charlie
-ssh toshihiro@node01 echo dave
-dave
-charlie
-bob
-alice
+echo alice bob charlie dave eve | distxargs \
+-P 1,toshihiro@localhost -P 2,toshihiro@node1 -n1 -t -I '{}' \
+echo hello, '{}'!
+ssh toshihiro@localhost echo hello, alice!
+ssh toshihiro@node1 echo hello, bob!
+ssh toshihiro@node1 echo hello, charlie!
+hello, charlie!
+hello, bob!
+ssh toshihiro@node1 echo hello, dave!
+ssh toshihiro@node1 echo hello, eve!
+hello, alice!
+hello, dave!
+hello, eve!
 ```
 
 ### Configuration file
 
-If you fell annoying to specify option `-P`s every time you run `distxargs`,
+If you feel annoying to specify option `-P`s every time you run `distxargs`,
 consider to use a configuration file `./conf.distxargs.yaml`, containing a list of host name and count of max processes for each host.
 
 To prepare the configuration file, run the following command:
@@ -122,7 +129,7 @@ default:
 
 hosts:
 - host_name: "localhost"
-  max_processes: 2
+  max_processes: 1
 - host_name: "node01"
   max_processes: 2
 ```
@@ -130,7 +137,7 @@ hosts:
 Then the command line of the above example will become:
 
 ```
-echo alice bob charlie dave | distxargs -c. -n1 -t echo
+echo alice bob charlie dave eve | distxargs -c. -n1 -t -I '{}' echo hello, '{}'!
 ```
 
 You can make a default configuration file by saving a configuration file to a path `~/.confg/distxargs/conf.distxargs.conf` .
@@ -138,7 +145,7 @@ You can make a default configuration file by saving a configuration file to a pa
 In case of use the default configuration file, add option `-c~` to the command line:
 
 ```
-echo alice bob charlie dave | distxargs -c~ -n1 -t echo
+echo alice bob charlie dave eve | distxargs -c~ -n1 -t -I '{}' echo hello, '{}'!
 ```
 
 ## License
