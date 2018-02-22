@@ -137,15 +137,16 @@ hosts:
 __doc__ = '''Parallel execution with a pool of worker processes on cluster via ssh.
 
 Usage:
-  distxargs [options] (-n MAX_ARGS|-L MAX_ARGS) <command>...
+  distxargs [options] (-n MAX_ARGS|-L MAX_ARGS) (-P PROCESSES,USER@HOST...|-c FILE) <command>...
 
 Options:
   -a FILE           Read arguments from file.
+  -P PROCESSES,USER@HOST...     Specify max count of processes of a host. 
   -I REPLACE_STR    Replace the string in command with arguments.
   -n MAX_ARGS       Max count of arguments passed to a process.
   -L MAX_ARGS       Same as `-n`, but arguments are separated by new line.
   -t                Show command line on command execution.
-  -c FILE           Configuration file. [default: {config_file}]
+  -c FILE           Configuration file.
   --localhost-only  Run commands only on localhost.
   --generate-sample-config-file
 '''.format(config_file=CONF_FILE)
@@ -154,7 +155,9 @@ Options:
 def main():
     args = dict()
     commands = []
+    host_configs = []
     argv = sys.argv[1:]
+
     def parse_option_with_param(option, a):
         assert a.startswith(option)
         if a == option:
@@ -176,6 +179,14 @@ def main():
             parse_option_with_param('-L', a)
         elif a == '-t':
             args['-t'] = True
+        elif a.startswith('-P'):
+            parse_option_with_param('-P', a)
+            s = args['-P']
+            i = s.find(',')
+            j = s.find('@', i + 1)
+            if i < 0 or j < 0:
+                sys.exit('invalid param of option `-P`: %s' % s)
+            host_configs.append(HostConfig(s[j + 1:], s[i + 1:j], int(s[:i])))
         elif a == '--localhost-only':
             args['--localhost-only'] = True
         elif a in ('-h', '--help'):
@@ -192,26 +203,30 @@ def main():
 
     option_verbose = args.get('-t')
     option_localhost_only = args.get('--localhost-only')
-
-    if args.get('-c'):
-        config_file = args.get('-c')
-        if path.isdir(config_file):
-            candidate_files = [
-                path.join(config_file, CONF_FILE),
-                path.join(config_file, '.config', 'distxargs', CONF_FILE),
-            ]
-            for f in candidate_files:
-                if path.isfile(f):
-                    config_file = f
-                    break  # for f
-    else:
-        config_file = CONF_FILE
-    if not path.isfile(config_file):
-        sys.exit("no configuration file found")
-
-    host_config_table = read_config(config_file)
     replace_str = args.get('-I')
     cmd_template = commands[:]
+
+    if host_configs:
+        if args.get('-c'):
+            sys.exit('options `-c` and `-P` are mutually exclusive')
+        host_config_table = dict((hc.host_name, hc) for hc in host_configs)
+    else:
+        if args.get('-c'):
+            config_file = args.get('-c')
+            if path.isdir(config_file):
+                candidate_files = [
+                    path.join(config_file, CONF_FILE),
+                    path.join(config_file, '.config', 'distxargs', CONF_FILE),
+                ]
+                for f in candidate_files:
+                    if path.isfile(f):
+                        config_file = f
+                        break  # for f
+        else:
+            config_file = CONF_FILE
+        if not path.isfile(config_file):
+            sys.exit("neither configuration file or option `-P` is given")
+        host_config_table = read_config(config_file)
 
     if option_localhost_only:
         host_config_table = dict((h, hc) for h, hc in host_config_table.items() if is_localhost(hc.host_name))

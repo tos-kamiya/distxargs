@@ -1,13 +1,13 @@
-﻿# distxargs, Parallel execution with a pool of worker processes on cluster via ssh.
+# distxargs, A parallel distributed version of xargs -P.
 
-`distxargs` is a easy-to-use parallel execution of cli commands, basically a distributed version of `xargs -P`.
+`distxargs` is a easy-to-use parallel execution of cli commands, basically a **distributed version of `xargs -P` **.
 
 `distxargs` runs cli commands in a parallel way on host computers via ssh.
-You can specify a count of max processes for each of the host computers.
+You **can specify a count of max processes for each of host computers**.
 
 ## Installation
 
-To install disxargs script:
+To install `disxargs`:
 
 ```
 python3 -m pip install git+https://github.com/tos-kamiya/distxargs
@@ -21,28 +21,7 @@ To uninstall:
 python3 -m pip uninstall distxargs
 ```
 
-## Configuration
-
-`distxargs` requires a configuration file `conf.distxargs.yaml`, which contains a list of host name and count of max processes for each host.
-
-To prepare the configuration file, run the following command:
-
-```
-distxargs --generate-sample-config-file
-```
-
-And then edit the configuration like:
-
-```
-default:
-  user_name: "toshihiro"
-
-hosts:
-- host_name: "localhost"
-  max_processes: 2
-- host_name: "node01"
-  max_processes: 2
-```
+## Configuration of hosts
 
 `distxargs` requires that each host can be connected using `ssh` command **without password** . If you are not sure about that, set up the hosts with following steps.
 
@@ -90,14 +69,15 @@ If successfully done, you can now login to the host without password with `ssh`.
 
 ## CLI usage
 
-`distxargs` has a limited subset of CLI options/arguments of command `xargs`
+`distxargs` has a limited (and slightly modified) subset of CLI options/arguments of command `xargs`
 
 ```
 Usage:
-  distxargs [options] (-n MAX_ARGS|-L MAX_ARGS) <command>...
+  distxargs [options] (-n MAX_ARGS|-L MAX_ARGS) (-P PROCESSES,USER@HOST...|-c FILE) <command>...
 
 Options:
   -a FILE           Read arguments from file.
+  -P PROCESSES,USER@HOST...     Specify max count of processes of a host.
   -I REPLACE_STR    Replace the string in command with arguments.
   -n MAX_ARGS       Max count of arguments passed to a process.
   -L MAX_ARGS       Same as `-n`, but arguments are separated by new line.
@@ -107,10 +87,12 @@ Options:
   --generate-sample-config-file
 ```
 
-## Example
+### Example
 
 ```
-echo alice bob charlie dave | distxargs -n 1 -t echo
+echo alice bob charlie dave | distxargs -n1 -t \
+-P 2,toshihiro@localhost -P 2,toshihiro@node1 \
+echo
 ssh toshihiro@localhost echo alice
 ssh toshihiro@localhost echo bob
 ssh toshihiro@node01 echo charlie
@@ -119,6 +101,44 @@ dave
 charlie
 bob
 alice
+```
+
+### Configuration file
+
+If you fell annoying to specify option `-P`s every time you run `distxargs`,
+consider to use a configuration file `./conf.distxargs.yaml`, containing a list of host name and count of max processes for each host.
+
+To prepare the configuration file, run the following command:
+
+```
+distxargs --generate-sample-config-file
+```
+
+And then edit the configuration and save to a file `./conf.distxargs.yaml`:
+
+```
+default:
+  user_name: "toshihiro"
+
+hosts:
+- host_name: "localhost"
+  max_processes: 2
+- host_name: "node01"
+  max_processes: 2
+```
+
+Then the command line of the above example will become:
+
+```
+echo alice bob charlie dave | distxargs -c. -n1 -t echo
+```
+
+You can make a default configuration file by saving a configuration file to a path `~/.confg/distxargs/conf.distxargs.conf` .
+
+In case of use the default configuration file, add option `-c~` to the command line:
+
+```
+echo alice bob charlie dave | distxargs -c~ -n1 -t echo
 ```
 
 ## License
