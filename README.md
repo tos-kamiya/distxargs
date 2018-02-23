@@ -140,7 +140,9 @@ Then the command line of the above example will become:
 echo alice bob charlie dave eve | distxargs -c. -n1 -t -I '{}' echo hello, '{}'!
 ```
 
-You can make a default configuration file by saving a configuration file to a path `~/.confg/distxargs/conf.distxargs.conf` .
+The configuration is a local one, that is, supposed to saved to each working directory.
+
+However, alternatively, you can make a default (global) configuration file by saving a configuration file to a path `~/.confg/distxargs/conf.distxargs.conf` .
 
 In case of use the default configuration file, add option `-c~` to the command line:
 
